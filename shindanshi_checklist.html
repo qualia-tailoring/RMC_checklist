@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>診断士 1次試験 学習チェックリスト</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+:root {
+  --bg:#f7f6f2;--surface:#fff;--surface2:#f0ede6;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1916;--text2:#6b6860;--text3:#a09e99;
+  --accent:#2d4a3e;--accent-light:#e8f0ec;--accent-mid:#4a7c64;
+  --success:#2d6a4f;--success-bg:#d8f3dc;
+  --warn:#b45309;--warn-bg:#fef3c7;
+  --danger:#991b1b;--danger-bg:#fee2e2;
+  --info:#1e40af;--info-bg:#dbeafe;
+  --s1:#3c3489;--s1bg:#eeedfe;
+  --s2:#0f6e56;--s2bg:#e1f5ee;
+  --s3:#534ab7;--s3bg:#dad8fd;
+  --s4:#854f0b;--s4bg:#faeeda;
+  --s5:#993c1d;--s5bg:#faece7;
+  --s6:#185fa5;--s6bg:#e6f1fb;
+  --s7:#3b6d11;--s7bg:#eaf3de;
+  --r:8px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── Layout ── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:.5px solid var(--border2);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;padding:2rem 2.5rem;max-width:960px}
+
+/* ── Sidebar ── */
+.sb-head{padding:1.25rem 1.25rem .75rem;border-bottom:.5px solid var(--border)}
+.sb-head h1{font-size:12px;font-weight:700;letter-spacing:.07em;color:var(--accent);text-transform:uppercase}
+.sb-head p{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+
+.overall{padding:.875rem 1.25rem;border-bottom:.5px solid var(--border)}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.prog-lbl{font-size:11px;color:var(--text3)}
+.prog-pct{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--accent)}
+.bar-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bar{height:100%;background:var(--accent-mid);border-radius:2px;transition:width .4s}
+.prog-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:4px}
+
+/* review badge in sidebar */
+.review-alert{margin:.75rem 1.25rem;padding:8px 10px;background:var(--warn-bg);border:.5px solid #fbbf24;border-radius:var(--r);font-size:12px;color:var(--warn);cursor:pointer;display:none}
+.review-alert.show{display:block}
+.review-alert strong{display:block;font-weight:700;margin-bottom:1px}
+
+.nav-list{flex:1;padding:.5rem 0}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 1.25rem;cursor:pointer;transition:background .1s;border-left:3px solid transparent}
+.nav-item:hover{background:var(--bg)}
+.nav-item.active{background:var(--accent-light);border-left-color:var(--accent)}
+.nav-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.nav-name{font-size:12px;font-weight:500;flex:1;line-height:1.3}
+.nav-badge{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+.nav-badge.complete{color:var(--success);font-weight:500}
+.nav-due{font-size:10px;background:var(--warn-bg);color:var(--warn);padding:1px 5px;border-radius:6px;font-family:'DM Mono',monospace}
+
+.sb-foot{padding:.875rem 1.25rem;border-top:.5px solid var(--border);display:flex;flex-direction:column;gap:6px}
+.btn-sm-reset{width:100%;padding:6px;font-size:12px;font-family:'Noto Sans JP',sans-serif;color:var(--text2);background:transparent;border:.5px solid var(--border2);border-radius:var(--r);cursor:pointer}
+.btn-sm-reset:hover{background:var(--bg)}
+
+/* ── API Settings ── */
+.api-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.api-toggle-lbl{font-size:12px;color:var(--text2)}
+.toggle-wrap{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle-wrap input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;margin:0;z-index:1}
+.toggle-track{width:36px;height:20px;background:var(--border2);border-radius:10px;transition:background .2s;display:block}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
+.toggle-wrap input:checked + .toggle-track{background:var(--accent-mid)}
+.toggle-wrap input:checked ~ .toggle-thumb{transform:translateX(16px)}
+.api-key-area{display:none;margin-top:6px}
+.api-key-area.show{display:block}
+.api-key-input{width:100%;padding:6px 8px;font-size:12px;font-family:'DM Mono',monospace;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none}
+.api-key-input:focus{border-color:var(--accent-mid)}
+.api-save-btn{margin-top:4px;width:100%;padding:5px;font-size:11px;font-family:'Noto Sans JP',sans-serif;background:var(--accent-light);color:var(--accent);border:.5px solid var(--accent-mid);border-radius:var(--r);cursor:pointer}
+.api-status{font-size:10px;margin-top:3px;font-family:'DM Mono',monospace}
+.api-status.ok{color:var(--success)}
+.api-status.ng{color:var(--danger)}
+
+/* ── Tabs (main) ── */
+.tabs{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:.5px solid var(--border2);padding-bottom:0}
+.tab{padding:7px 14px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+
+/* ── Metrics ── */
+.metrics-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.mc{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:11px 13px}
+.mc .lbl{font-size:11px;color:var(--text3);margin-bottom:3px}
+.mc .val{font-family:'DM Mono',monospace;font-size:19px;font-weight:500}
+.mc.done .val{color:var(--success)}
+.mc.warn-card .val{color:var(--warn)}
+
+/* ── Checklist ── */
+.ctrl-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.btn-ctrl{padding:5px 11px;font-size:12px;font-family:'Noto Sans JP',sans-serif;color:var(--text2);background:var(--surface);border:.5px solid var(--border2);border-radius:var(--r);cursor:pointer}
+.btn-ctrl:hover{background:var(--surface2)}
+.btn-ctrl.primary{background:var(--accent-light);color:var(--accent);border-color:var(--accent-mid)}
+
+.subject-header{display:flex;align-items:flex-start;gap:13px;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:.5px solid var(--border2)}
+.subject-icon{width:42px;height:42px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0}
+.subject-meta{flex:1}
+.subject-name{font-size:16px;font-weight:700;line-height:1.3}
+.subject-phase{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.subject-stat{font-family:'DM Mono',monospace;font-size:13px;color:var(--text2);white-space:nowrap}
+.subject-stat span{color:var(--accent);font-weight:500}
+
+.section{margin-bottom:8px}
+.section-header{display:flex;align-items:center;gap:9px;padding:10px 13px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:background .1s;user-select:none}
+.section-header:hover{background:var(--surface2)}
+.section-header.open{border-radius:var(--r) var(--r) 0 0;border-bottom-color:transparent}
+.chevron{width:13px;height:13px;color:var(--text3);flex-shrink:0;transition:transform .2s}
+.chevron.open{transform:rotate(90deg)}
+.section-title{font-size:13px;font-weight:500;flex:1}
+.section-badge{font-family:'DM Mono',monospace;font-size:11px;padding:2px 7px;border-radius:9px;background:var(--bg);color:var(--text2)}
+.section-badge.complete{background:var(--success-bg);color:var(--success)}
+
+.items{display:none;background:var(--surface);border:.5px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.items.open{display:block}
+.item{display:flex;align-items:center;gap:11px;padding:9px 13px;cursor:pointer;border-bottom:.5px solid var(--border);transition:background .1s;position:relative}
+.item:last-child{border-bottom:none}
+.item:hover{background:var(--bg)}
+.cb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cb.checked{background:var(--success);border-color:var(--success)}
+.cb svg{display:none}
+.cb.checked svg{display:block}
+.item-text{font-size:13px;flex:1;line-height:1.5}
+.item-text.checked{color:var(--text3);text-decoration:line-through}
+.due-badge{font-size:10px;padding:1px 6px;border-radius:6px;font-family:'DM Mono',monospace;flex-shrink:0}
+.due-badge.overdue{background:var(--danger-bg);color:var(--danger)}
+.due-badge.today{background:var(--warn-bg);color:var(--warn)}
+.due-badge.soon{background:var(--info-bg);color:var(--info)}
+
+/* ── Flashcard ── */
+#flashcard-view{display:none}
+#flashcard-view.show{display:block}
+.fc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.fc-counter{font-family:'DM Mono',monospace;font-size:13px;color:var(--text2)}
+.fc-card{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--rl);padding:2.5rem 2rem;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:1.25rem;cursor:pointer;transition:background .15s;position:relative}
+.fc-card:hover{background:var(--surface2)}
+.fc-card-subject{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.fc-card-topic{font-size:17px;font-weight:500;line-height:1.5;margin-bottom:.75rem}
+.fc-card-hint{font-size:12px;color:var(--text3);margin-top:.5rem}
+.fc-back{display:none;border-top:.5px solid var(--border);padding-top:1rem;margin-top:1rem;width:100%;text-align:left}
+.fc-back.show{display:block}
+.fc-ai-answer{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap}
+.fc-ai-loading{font-size:13px;color:var(--text3);font-family:'DM Mono',monospace}
+.fc-actions{display:flex;gap:10px;margin-bottom:1.5rem}
+.btn-fc{flex:1;padding:11px;font-size:14px;font-family:'Noto Sans JP',sans-serif;border-radius:var(--r);cursor:pointer;border:.5px solid var(--border2);transition:all .15s}
+.btn-fc.again{background:var(--danger-bg);color:var(--danger);border-color:#fca5a5}
+.btn-fc.again:hover{background:#fecaca}
+.btn-fc.good{background:var(--success-bg);color:var(--success);border-color:#6ee7b7}
+.btn-fc.good:hover{background:#bbf7d0}
+.fc-skip{font-size:12px;color:var(--text3);text-align:center;cursor:pointer;margin-top:.5rem}
+.fc-skip:hover{color:var(--text2)}
+.fc-empty{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.fc-empty strong{display:block;font-size:15px;color:var(--text2);margin-bottom:.5rem}
+.fc-filter-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.fc-filter-btn{padding:4px 10px;font-size:12px;border-radius:var(--r);border:.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer}
+.fc-filter-btn.active{background:var(--accent-light);color:var(--accent);border-color:var(--accent-mid)}
+
+/* ── Review schedule tab ── */
+#schedule-view{display:none}
+#schedule-view.show{display:block}
+.schedule-section{margin-bottom:1.5rem}
+.schedule-section h3{font-size:13px;font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.sched-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sched-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);margin-bottom:5px;font-size:13px}
+.sched-item .si-subject{font-size:10px;padding:1px 6px;border-radius:5px;font-family:'DM Mono',monospace;flex-shrink:0}
+.sched-item .si-topic{flex:1;color:var(--text)}
+.sched-item .si-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0}
+.sched-empty{font-size:13px;color:var(--text3);padding:1rem 0}
+
+/* Color helpers */
+.s1{--sc:var(--s1);--sbg:var(--s1bg)}
+.s2{--sc:var(--s2);--sbg:var(--s2bg)}
+.s3{--sc:var(--s3);--sbg:var(--s3bg)}
+.s4{--sc:var(--s4);--sbg:var(--s4bg)}
+.s5{--sc:var(--s5);--sbg:var(--s5bg)}
+.s6{--sc:var(--s6);--sbg:var(--s6bg)}
+.s7{--sc:var(--s7);--sbg:var(--s7bg)}
+
+@media(max-width:700px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:.5px solid var(--border2)}
+  .main{padding:1.25rem}
+  .metrics-bar{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <h1>診断士 1次試験</h1>
+    <p>学習チェックリスト</p>
+  </div>
+  <div class="overall">
+    <div class="prog-row">
+      <span class="prog-lbl">全体進捗</span>
+      <span class="prog-pct" id="overall-pct">0%</span>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="overall-bar" style="width:0%"></div></div>
+    <div class="prog-sub" id="overall-sub">0 / 0 完了</div>
+  </div>
+  <div class="review-alert" id="review-alert" onclick="switchMainTab('flashcard')">
+    <strong>復習タイミングです</strong>
+    <span id="review-alert-count"></span>件のトピックが期限を迎えています
+  </div>
+  <nav class="nav-list" id="nav-list"></nav>
+  <div class="sb-foot">
+    <!-- API toggle -->
+    <div class="api-toggle-row">
+      <span class="api-toggle-lbl">AI機能（Anthropic API）</span>
+      <div class="toggle-wrap">
+        <input type="checkbox" id="api-toggle" onchange="toggleApi(this.checked)">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+    <div class="api-key-area" id="api-key-area">
+      <input class="api-key-input" type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
+      <button class="api-save-btn" onclick="saveApiKey()">保存する</button>
+      <div class="api-status" id="api-status"></div>
+    </div>
+    <button class="btn-sm-reset" onclick="resetAll()">チェックをすべてリセット</button>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <div class="tabs">
+    <button class="tab active" id="tab-checklist" onclick="switchMainTab('checklist')">チェックリスト</button>
+    <button class="tab" id="tab-flashcard" onclick="switchMainTab('flashcard')">フラッシュカード</button>
+    <button class="tab" id="tab-schedule" onclick="switchMainTab('schedule')">復習スケジュール</button>
+  </div>
+
+  <!-- Metrics (always visible) -->
+  <div class="metrics-bar">
+    <div class="mc"><div class="lbl">総トピック数</div><div class="val" id="m-total">—</div></div>
+    <div class="mc done"><div class="lbl">完了済み</div><div class="val" id="m-done">—</div></div>
+    <div class="mc"><div class="lbl">残り</div><div class="val" id="m-left">—</div></div>
+    <div class="mc warn-card"><div class="lbl">復習期限あり</div><div class="val" id="m-due">—</div></div>
+  </div>
+
+  <!-- ── CHECKLIST VIEW ── -->
+  <div id="checklist-view">
+    <div id="subject-area"></div>
+  </div>
+
+  <!-- ── FLASHCARD VIEW ── -->
+  <div id="flashcard-view">
+    <div class="fc-header">
+      <div style="font-size:15px;font-weight:500">フラッシュカード復習</div>
+      <div class="fc-counter" id="fc-counter"></div>
+    </div>
+    <div class="fc-filter-row" id="fc-filter-row"></div>
+    <div id="fc-content"></div>
+  </div>
+
+  <!-- ── SCHEDULE VIEW ── -->
+  <div id="schedule-view">
+    <div id="schedule-content"></div>
+  </div>
+</main>
+</div>
+
+<script>
+const SUBJECTS = [
+  {id:'s1',name:'経済学・経済政策',num:'①',phase:'Phase 1（Day 1〜30）',cls:'s1',sections:[
+    {title:'経済指標の見方・読み方',items:['国民経済計算の概念・国民所得統計','雇用統計・物価指数','景気動向指数・マネーストック統計','国際収支・為替レート・経済事情']},
+    {title:'マクロ経済理論と経済政策',items:['生産物市場とGDP・貨幣市場と利子率','IS-LM曲線','政府支出・租税と財政政策','貨幣理論と金融政策','雇用と物価水準・景気変動と景気循環']},
+    {title:'国際経済と経済政策',items:['比較生産費と貿易理論・貿易政策','国際収支と為替レート','国際マクロ経済の理論と政策']},
+    {title:'主要経済理論',items:['ケインズ理論','古典派と新古典派の理論','マネタリズム']},
+    {title:'市場メカニズム',items:['市場均衡・不均衡・弾力性の概念','経済余剰の概念・競争的市場の資源配分機能','市場の失敗']},
+    {title:'消費と生産の理論',items:['効用理論・予算制約と消費者行動・需要曲線','生産関数・費用関数・利潤最大化・供給曲線']},
+    {title:'組織と戦略の経済学',items:['情報の不完全性・ゲーム理論','独占の弊害と寡占化の協調行動','製品差別化と独占的競争・規模の経済性・範囲の経済性']},
+    {title:'所得分配',items:['公正性・公平性の概念','生産要素市場と生産要素報酬','所得再分配と税制・補助金']},
+  ]},
+  {id:'s2',name:'財務・会計',num:'②',phase:'Phase 1（Day 1〜30）',cls:'s2',sections:[
+    {title:'簿記の基礎',items:['簿記原理・会計帳簿','決算処理一巡（試算表・精算表の作成）','決算仕訳・貸借対照表・損益計算書の作成']},
+    {title:'企業会計の基礎',items:['損益計算書（収益の会計・費用の会計）','貸借対照表（資産・負債・純資産の会計）','キャッシュ・フロー計算書','企業結合（合併・分割・連結決算）・会計ディスクロージャー']},
+    {title:'税務会計の基礎',items:['益金と損金','課税所得と税額の計算']},
+    {title:'原価計算',items:['原価概念','原価計算の種類と方法','原価情報の利用']},
+    {title:'経営分析',items:['経営比率分析（収益性・安全性・生産性・成長性）','CVP分析']},
+    {title:'利益と資金の管理',items:['利益計画（限界利益・貢献利益・プロダクト・ミックス）','予算・実績差異分析','資金繰りと資金計画','キャッシュ・フロー管理（FCF・運転資金・CF関連比率）']},
+    {title:'資金調達と配当政策',items:['資金調達の形態（内部・外部・直接・間接・リース等）','資本コスト（負債・自己資本・WACC）','ペイアウト政策（配当・自社株買い）','最適資本構成（財務レバレッジ・MM理論）']},
+    {title:'実物投資',items:['貨幣の時間価値とDCF','投資評価基準（回収期間・ARR・IRR・NPV・収益性指数）','不確実性下の投資決定']},
+    {title:'証券投資',items:['ポートフォリオ理論（リスク・リターン・効率的ポートフォリオ）','資本市場理論（効率的市場仮説・CAPM・市場モデル）']},
+    {title:'企業価値',items:['株主価値の算定（DDM・PER・PBR・PCFR）','企業価値評価モデル（残余利益モデル・DCFモデル）','M&A企業評価（収益還元・純資産・市場株価比較・マルチプル法）']},
+    {title:'デリバティブとリスク管理',items:['リスクの種類','オプション取引（コール・プット）','先物取引（為替予約・通貨先物）','スワップ（金利・通貨）']},
+  ]},
+  {id:'s3',name:'企業経営理論',num:'③',phase:'Phase 1（Day 1〜30）',cls:'s3',sections:[
+    {title:'経営戦略論 – 戦略の考え方',items:['戦略的意思決定・階層別戦略','戦略策定プロセス・外部環境分析','内部環境分析（VRIO）・コアコンピタンス・ダイナミックケイパビリティ']},
+    {title:'経営戦略論 – 企業戦略',items:['ドメインの定義','多角化（シナジー・関連型・非関連型）','PPM・経験曲線・製品ライフサイクル','垂直統合・M&A・戦略的提携']},
+    {title:'経営戦略論 – 競争戦略',items:['業界の構造分析（価値連鎖・ファイブフォース）','競争優位の戦略（コストリーダーシップ・差別化・焦点）','競争地位別戦略（リーダー・チャレンジャー・ニッチャー・フォロワー）','業界標準（プラットフォーム）']},
+    {title:'経営戦略論 – MOT・国際・CSR',items:['技術戦略・イノベーションマネジメント（イノベーションのジレンマ・オープンイノベーション）','新規事業開発・ビジネスモデル・アントレプレナーシップ','国際経営戦略の類型・海外進出形態','CSR・CSV・コーポレートガバナンス']},
+    {title:'組織論 – 組織構造・文化',items:['組織目標・階層・分業と調整・権限と責任','事業部制・職能部門・マトリックス・ネットワーク組織','組織文化のレベル・組織文化と経営戦略・組織変革']},
+    {title:'組織論 – 個人・集団・変革',items:['意思決定（限定的合理性・認知バイアス）','モチベーション（欲求段階論・期待理論・目標設定理論）','リーダーシップ（特性論・行動論・状況論・変革型）','集団（グループシンク・心理的安全性）','組織変革・組織学習・組織のライフサイクル']},
+    {title:'組織論 – 人的資源管理',items:['労働関連法規（労基法・労契法・均等法・育介法等）','雇用管理（採用・配置・人事異動・資格制度）','評価・処遇（人事評価・賃金体系）','人材育成（能力開発・キャリア開発・メンタリング）']},
+    {title:'マーケティング論 – 基礎・STP・4P',items:['マーケティングの定義・コンセプト・変遷','STPと4P・マーケティング・ミックスの展開','マーケティング・リサーチ（調査方法・データ収集）']},
+    {title:'マーケティング論 – 製品・ブランド・価格',items:['製品の概念・PLC・新製品開発','プロダクト・マネジメント（ポートフォリオ・需要拡大）','ブランドエクイティ・ブランド・マネジメント','消費者行動（影響要因・意思決定プロセス・認知）','価格戦略・価格決定手法']},
+    {title:'マーケティング論 – コミュニケーション・流通',items:['コミュニケーション（マスメディア・SP・デジタル）','プロモーション政策（プッシュ・プル・人的販売・販促・PR）','流通チャネル（機能・種類・デジタル化・OMO）','リレーションシップ・マーケティング・CRM','サービス・マーケティング・デジタル・マーケティング']},
+  ]},
+  {id:'s4',name:'運営管理',num:'④',phase:'Phase 1（Day 1〜30）',cls:'s4',sections:[
+    {title:'生産管理概論・生産システム',items:['生産管理の基本機能・管理目標（PQCDSME）','JITシステム（平準化生産・かんばん方式）','ERP・SCM・FA・生産技術・情報システム','環境配慮型生産（3R・LCA）']},
+    {title:'生産計画',items:['製品開発・製品設計（VA/VE・コンカレントエンジニアリング・CAD/CAM）','生産方式（見込/受注/ロット/セル生産等）・ライン編成','需要予測（指数平滑・移動平均）','需給計画（MRP・MPS・BOM）・スケジューリング（PERT・大中小日程）']},
+    {title:'作業管理・設備管理',items:['作業管理（標準作業・標準時間・多能工化・職務設計）','分析手法（作業測定・時間研究・各種工程分析・動作分析）','作業の改善（ECRS・動作経済の原則）','設備管理（5S・TPM・保全方法・設備効率・SLP）','工場計画（プラントレイアウト・設備配置）・経済性分析']},
+    {title:'物の管理・品質管理',items:['資材管理（資材計画・外注管理・ABC分析）','在庫管理（発注方式・EOQ）','品質管理（QC7つ道具・新QC7つ道具・TQM・ISO9000）','廃棄物等の管理（ISO14000）']},
+    {title:'店舗・販売管理 – 店舗立地',items:['店舗施設に関する法律知識（都市計画法・大規模小売店舗立地法・建築基準法等）','店舗立地と出店（立地条件・商圏分析）','商業集積と業種・業態（SC・商店街・無店舗販売）']},
+    {title:'マーチャンダイジング・物流・情報システム',items:['商品販売計画（仕入予算・品揃え・価格設定・販促）','売場構成・陳列（VMD・棚割り）','商品在庫管理・需要予測','輸配送管理（ユニットロード・共同輸配送）','物流センター管理','流通情報システム（POS・バーコード・電子タグ・トレーサビリティ）']},
+  ]},
+  {id:'s5',name:'経営法務',num:'⑤',phase:'Phase 2（Day 31〜60）',cls:'s5',sections:[
+    {title:'事業開始・会社設立・倒産',items:['個人事業の開始・法人の種類と設立登記','届出・手続等（許認可・税務上の届出）','合併等の手続・組織変更手続','倒産等の手続（会社更生法・民事再生法・会社法）']},
+    {title:'知的財産権',items:['産業財産権の内容と取得方法（特許・商標・意匠・実用新案）','著作権の内容（著作者人格権・著作権・著作隣接権・保護期間）','知的財産権に関する契約（移転・ライセンス・トレードシークレット）','知的財産権に関する国際条約']},
+    {title:'取引関係に関する法務',items:['契約に関する基礎知識（成立要件・有効要件）','契約の類型（NDA・共同開発・売買・フランチャイズ・合弁等）','英文契約・外国企業との取引に関する法律知識','紛争解決方法（訴訟・仲裁・調停）']},
+    {title:'企業活動に関する法律',items:['民法（物権・債権・相続）','会社法（株式会社の機関・株式・合併・取締役の忠実義務）','金融商品取引法・独占禁止法・不正競争防止法','製造物責任法・消費者保護法','事業承継に関する法（経営承継円滑化法）']},
+    {title:'資本市場へのアクセス',items:['資本市場に関する基礎的知識（市場の種類・届出書）','有価証券報告書とディスクロージャー','社債発行の手続・株式公開手続']},
+  ]},
+  {id:'s6',name:'経営情報システム',num:'⑥',phase:'Phase 2（Day 31〜60）',cls:'s6',sections:[
+    {title:'情報処理の基礎技術',items:['ハードウェア（プロセッサ・メモリ・入出力デバイス）','ソフトウェア（OS・ミドルウェア・アプリ）','プログラム設計（アルゴリズム・データ構造・プログラミング技法）','ソフトウェア開発（プロセス中心・データ中心・オブジェクト指向）']},
+    {title:'情報処理システムと関連技術',items:['システム構成（クライアントサーバ・Web・仮想化）','情報処理の形態（集中/分散/並列・リアルタイム/バッチ）','外部情報資源の活用（クラウドサービス・OSS）']},
+    {title:'DB・ネットワーク・システム評価',items:['データベースの種類と構成・DBMS・データベース関連技術','通信ネットワークの種類と構成・通信プロトコル・ネットワーク関連技術','システムの性能・信頼性・経済性']},
+    {title:'経営戦略と情報システム',items:['情報システム戦略の策定（経営戦略との連携・システム化計画）','経営革新と情報システム（ビジネスモデル・EA・業務革新）','ITガバナンス（内部統制・システム監査）','情報システムの適用領域（SCM・CRM・新サービス）']},
+    {title:'情報システム開発・マネジメント・評価',items:['システム開発手法（ウォーターフォール・インクリメンタル・アジャイル）','組織と人材（PM・サービスマネジメント）','情報セキュリティ（概念・管理・対策）','情報システムの評価（品質・価値評価）','意思決定支援・データ分析技術・データサイエンス（AI・統計）']},
+  ]},
+  {id:'s7',name:'中小企業経営・政策',num:'⑦',phase:'Phase 3（Day 61〜85）',cls:'s7',sections:[
+    {title:'経済・産業における中小企業の役割',items:['各種統計にみる中小企業・中小企業の動向','産業構造と中小企業・大企業と中小企業の比較','中小企業の役割・地域社会と中小企業']},
+    {title:'中小企業の経営特性と経営課題',items:['各種統計にみる中小企業経営の特徴・経営指標','中小企業の経営特質と課題（経営基盤・多様性・経営戦略）','業種・業態別経営特質と課題（製造・卸・小売・サービス・ベンチャー等）','中小企業の経営環境と経営革新（グローバル化・金融・税制・労働等）','中小企業経営に係る最近の動向（IT活用・事業承継・M&A・海外展開等）']},
+    {title:'中小企業政策の体系と内容',items:['中小企業関連法規','経営サポート（技術力強化・創業支援・経営革新・再生支援・雇用等）','金融サポート・財務サポート（税制・事業承継）','商業・地域サポート・分野別サポート','中小企業支援事業の実施体制と政策']},
+    {title:'中小企業政策の役割と変遷',items:['中小企業政策の変遷・基本法の変遷','小規模企業振興基本法・最近の政策動向']},
+  ]},
+];
+
+const STORAGE_KEY = 'smc_v2';
+const REVIEW_INTERVALS = [1,3,7,14,30]; // days
+
+let state = {checks:{}, dates:{}, fc_results:{}};
+let currentSubjectId = SUBJECTS[0].id;
+let currentMainTab = 'checklist';
+let apiEnabled = false;
+let apiKey = '';
+
+// fc state
+let fcQueue = [];
+let fcIndex = 0;
+let fcFilter = 'all'; // 'all' | 'due' | subject id
+let fcFlipped = false;
+let fcAiLoaded = false;
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) state = Object.assign({checks:{},dates:{},fc_results:{}}, JSON.parse(raw));
+    const ak = localStorage.getItem('smc_apikey');
+    if(ak){ apiKey = ak; }
+    const ae = localStorage.getItem('smc_apienabled');
+    if(ae === '1'){ apiEnabled = true; }
+  } catch(e){}
+}
+function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+function getKey(sid,si,ii){ return `${sid}_${si}_${ii}`; }
+
+// ── Due calculation ──
+function getDueStatus(key){
+  const d = state.dates[key];
+  if(!d) return null;
+  const checkedAt = new Date(d);
+  const now = new Date();
+  const daysSince = (now - checkedAt) / 86400000;
+  // find the next interval we haven't passed 2x yet
+  for(const interval of REVIEW_INTERVALS){
+    if(daysSince >= interval) continue;
+    if(daysSince >= interval - 0.5) return 'today'; // within 12h
+    if(daysSince >= interval - 2) return 'soon';
+    return null;
+  }
+  // all intervals passed
+  if(daysSince >= REVIEW_INTERVALS[REVIEW_INTERVALS.length-1]) return 'overdue';
+  return null;
+}
+
+function getNextReviewDate(key){
+  const d = state.dates[key];
+  if(!d) return null;
+  const checkedAt = new Date(d);
+  const now = new Date();
+  const daysSince = (now - checkedAt) / 86400000;
+  for(const interval of REVIEW_INTERVALS){
+    if(daysSince < interval){
+      const next = new Date(checkedAt.getTime() + interval * 86400000);
+      return next;
+    }
+  }
+  return null;
+}
+
+function countDueItems(){
+  return Object.keys(state.dates).filter(k => {
+    const s = getDueStatus(k);
+    return s === 'overdue' || s === 'today';
+  }).length;
+}
+
+// ── Totals ──
+function totalItems(){ return SUBJECTS.reduce((a,s) => a + s.sections.reduce((b,sec) => b + sec.items.length,0),0); }
+function doneItems(){ return Object.values(state.checks).filter(Boolean).length; }
+function subjectStats(sid){
+  const s = SUBJECTS.find(x=>x.id===sid);
+  let tot=0,done=0;
+  s.sections.forEach((sec,si) => sec.items.forEach((_,ii) => { tot++; if(state.checks[getKey(sid,si,ii)]) done++; }));
+  return {tot,done};
+}
+
+// ── Render nav ──
+function renderNav(){
+  const el = document.getElementById('nav-list');
+  el.innerHTML = SUBJECTS.map(s => {
+    const {tot,done} = subjectStats(s.id);
+    // count due in this subject
+    let due = 0;
+    s.sections.forEach((sec,si) => sec.items.forEach((_,ii) => {
+      const st = getDueStatus(getKey(s.id,si,ii));
+      if(st==='overdue'||st==='today') due++;
+    }));
+    return `<div class="nav-item ${s.cls} ${s.id===currentSubjectId&&currentMainTab==='checklist'?'active':''}" onclick="switchSubject('${s.id}')">
+      <div class="nav-dot" style="background:var(--sc)"></div>
+      <span class="nav-name">${s.num} ${s.name}</span>
+      ${due>0?`<span class="nav-due">${due}</span>`:''}
+      <span class="nav-badge ${done===tot&&tot>0?'complete':''}" id="nav-badge-${s.id}">${done}/${tot}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Update metrics ──
+function updateMetrics(){
+  const tot = totalItems(), done = doneItems(), left = tot-done;
+  const pct = tot ? Math.round(done/tot*100) : 0;
+  const due = countDueItems();
+  document.getElementById('overall-pct').textContent = pct+'%';
+  document.getElementById('overall-bar').style.width = pct+'%';
+  document.getElementById('overall-sub').textContent = `${done} / ${tot} 完了`;
+  document.getElementById('m-total').textContent = tot;
+  document.getElementById('m-done').textContent = done;
+  document.getElementById('m-left').textContent = left;
+  document.getElementById('m-due').textContent = due;
+  // review alert
+  const alert = document.getElementById('review-alert');
+  document.getElementById('review-alert-count').textContent = due;
+  alert.classList.toggle('show', due > 0);
+  // section badges
+  SUBJECTS.forEach(s => {
+    s.sections.forEach((_,si) => updateSectionBadge(s.id,si));
+    const {tot:t,done:d} = subjectStats(s.id);
+    const nb = document.getElementById('nav-badge-'+s.id);
+    if(nb){ nb.textContent=`${d}/${t}`; nb.className='nav-badge'+(d===t&&t>0?' complete':''); }
+  });
+  renderNav();
+}
+
+function updateSectionBadge(sid,si){
+  const s = SUBJECTS.find(x=>x.id===sid);
+  if(!s) return;
+  const sec = s.sections[si];
+  const badge = document.getElementById(`sbadge-${sid}-${si}`);
+  if(!badge) return;
+  const done = sec.items.filter((_,ii) => state.checks[getKey(sid,si,ii)]).length;
+  badge.textContent = `${done}/${sec.items.length}`;
+  badge.className = 'section-badge'+(done===sec.items.length?' complete':'');
+}
+
+// ── Render checklist ──
+function renderSubject(sid){
+  const s = SUBJECTS.find(x=>x.id===sid);
+  const {tot,done} = subjectStats(sid);
+  const spct = tot ? Math.round(done/tot*100) : 0;
+  document.getElementById('subject-area').innerHTML = `
+    <div class="subject-header ${s.cls}">
+      <div class="subject-icon" style="background:var(--sbg);color:var(--sc)">${s.num}</div>
+      <div class="subject-meta">
+        <div class="subject-name">${s.name}</div>
+        <div class="subject-phase">${s.phase}</div>
+      </div>
+      <div class="subject-stat"><span>${spct}%</span> 完了</div>
+    </div>
+    <div class="ctrl-row">
+      <button class="btn-ctrl" onclick="expandAll()">全セクション展開</button>
+      <button class="btn-ctrl" onclick="collapseAll()">全セクション閉じる</button>
+    </div>
+    ${s.sections.map((sec,si) => {
+      const done2 = sec.items.filter((_,ii) => state.checks[getKey(sid,si,ii)]).length;
+      return `<div class="section">
+        <div class="section-header" id="sh-${sid}-${si}" onclick="toggleSection('${sid}',${si})">
+          <svg class="chevron" id="chev-${sid}-${si}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4l4 4-4 4"/></svg>
+          <span class="section-title">${sec.title}</span>
+          <span class="section-badge ${done2===sec.items.length?'complete':''}" id="sbadge-${sid}-${si}">${done2}/${sec.items.length}</span>
+        </div>
+        <div class="items" id="sec-${sid}-${si}">
+          ${sec.items.map((item,ii) => {
+            const k = getKey(sid,si,ii);
+            const chk = !!state.checks[k];
+            const dueStatus = chk ? getDueStatus(k) : null;
+            let dueBadge = '';
+            if(dueStatus==='overdue') dueBadge = '<span class="due-badge overdue">復習期限切れ</span>';
+            else if(dueStatus==='today') dueBadge = '<span class="due-badge today">復習日</span>';
+            else if(dueStatus==='soon') dueBadge = '<span class="due-badge soon">もうすぐ復習</span>';
+            return `<div class="item" onclick="toggle('${sid}',${si},${ii})">
+              <div class="cb ${chk?'checked':''}" id="cb-${k}">
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4l2.5 2.5L9 1"/></svg>
+              </div>
+              <span class="item-text ${chk?'checked':''}" id="tx-${k}">${item}</span>
+              ${dueBadge}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+function toggle(sid,si,ii){
+  const k = getKey(sid,si,ii);
+  const wasChecked = !!state.checks[k];
+  state.checks[k] = !wasChecked;
+  if(!wasChecked){
+    state.dates[k] = new Date().toISOString();
+  } else {
+    delete state.dates[k];
+  }
+  saveState();
+  // re-render this item's due badge without full re-render
+  const cb = document.getElementById('cb-'+k);
+  const tx = document.getElementById('tx-'+k);
+  if(cb) cb.className = 'cb'+(state.checks[k]?' checked':'');
+  if(tx) tx.className = 'item-text'+(state.checks[k]?' checked':'');
+  updateMetrics();
+}
+
+function toggleSection(sid,si){
+  ['sec','sh','chev'].forEach(p => {
+    const el = document.getElementById(`${p}-${sid}-${si}`);
+    if(el) el.classList.toggle('open');
+  });
+}
+function expandAll(){
+  const s = SUBJECTS.find(x=>x.id===currentSubjectId);
+  s.sections.forEach((_,si) => ['sec','sh','chev'].forEach(p => document.getElementById(`${p}-${currentSubjectId}-${si}`)?.classList.add('open')));
+}
+function collapseAll(){
+  const s = SUBJECTS.find(x=>x.id===currentSubjectId);
+  s.sections.forEach((_,si) => ['sec','sh','chev'].forEach(p => document.getElementById(`${p}-${currentSubjectId}-${si}`)?.classList.remove('open')));
+}
+function switchSubject(sid){
+  currentSubjectId = sid;
+  if(currentMainTab !== 'checklist') switchMainTab('checklist');
+  else { renderSubject(sid); renderNav(); }
+}
+
+// ── Main tab ──
+function switchMainTab(tab){
+  currentMainTab = tab;
+  ['checklist','flashcard','schedule'].forEach(t => {
+    document.getElementById(`${t}-view`).classList.toggle('show', t===tab);
+    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+  });
+  document.getElementById('checklist-view').style.display = tab==='checklist' ? '' : 'none';
+  if(tab==='checklist'){ renderSubject(currentSubjectId); renderNav(); }
+  if(tab==='flashcard') initFlashcard();
+  if(tab==='schedule') renderSchedule();
+}
+
+// ── Flashcard ──
+function buildFcQueue(filter){
+  const all = [];
+  SUBJECTS.forEach(s => {
+    s.sections.forEach((sec,si) => {
+      sec.items.forEach((item,ii) => {
+        const k = getKey(s.id,si,ii);
+        if(!state.checks[k]) return; // only checked items
+        if(filter==='due'){
+          const st = getDueStatus(k);
+          if(st!=='overdue'&&st!=='today') return;
+        } else if(filter && filter!=='all'){
+          if(s.id !== filter) return;
+        }
+        all.push({sid:s.id,si,ii,item,section:sec.title,subjectName:s.name,subjectCls:s.cls,key:k});
+      });
+    });
+  });
+  // shuffle
+  for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]]; }
+  return all;
+}
+
+function initFlashcard(){
+  fcQueue = buildFcQueue(fcFilter);
+  fcIndex = 0;
+  fcFlipped = false;
+  fcAiLoaded = false;
+  renderFcFilters();
+  renderFcCard();
+}
+
+function renderFcFilters(){
+  const row = document.getElementById('fc-filter-row');
+  const filters = [{id:'all',label:'全科目'},{id:'due',label:'復習期限あり'},...SUBJECTS.map(s=>({id:s.id,label:s.num+' '+s.name}))];
+  row.innerHTML = filters.map(f => `<button class="fc-filter-btn ${fcFilter===f.id?'active':''}" onclick="setFcFilter('${f.id}')">${f.label}</button>`).join('');
+}
+function setFcFilter(f){
+  fcFilter = f;
+  initFlashcard();
+}
+
+function renderFcCard(){
+  const el = document.getElementById('fc-content');
+  if(fcQueue.length===0){
+    el.innerHTML = `<div class="fc-empty"><strong>カードがありません</strong>チェックリストで学習済みにしたトピックがフラッシュカードに表示されます。</div>`;
+    document.getElementById('fc-counter').textContent = '';
+    return;
+  }
+  if(fcIndex >= fcQueue.length){
+    el.innerHTML = `<div class="fc-empty"><strong>このセッション完了</strong>全 ${fcQueue.length} 枚を確認しました。お疲れ様でした！</div>`;
+    document.getElementById('fc-counter').textContent = `${fcQueue.length} / ${fcQueue.length}`;
+    return;
+  }
+  const card = fcQueue[fcIndex];
+  document.getElementById('fc-counter').textContent = `${fcIndex+1} / ${fcQueue.length}`;
+  const aiBtn = apiEnabled && apiKey
+    ? `<button class="btn-ctrl primary" style="margin-top:12px" onclick="loadAiAnswer()">AIで解説を生成</button>`
+    : `<div style="font-size:12px;color:var(--text3);margin-top:10px">APIキーを設定するとAI解説が使えます</div>`;
+  el.innerHTML = `
+    <div class="fc-card" onclick="flipCard()">
+      <div class="fc-card-subject ${card.subjectCls}" style="background:var(--sbg);color:var(--sc);padding:2px 8px;border-radius:6px">${card.subjectName} — ${card.section}</div>
+      <div class="fc-card-topic">${card.item}</div>
+      <div class="fc-card-hint">タップして詳細を見る / AIに解説させる</div>
+      <div class="fc-back" id="fc-back">
+        <div id="fc-ai-content"></div>
+        ${aiBtn}
+      </div>
+    </div>
+    <div class="fc-actions" id="fc-actions" style="display:none">
+      <button class="btn-fc again" onclick="fcAnswer(false)">もう一度</button>
+      <button class="btn-fc good" onclick="fcAnswer(true)">覚えた</button>
+    </div>
+    <div class="fc-skip" onclick="fcSkip()">スキップ →</div>
+  `;
+  fcFlipped = false;
+  fcAiLoaded = false;
+}
+
+function flipCard(){
+  if(fcFlipped) return;
+  fcFlipped = true;
+  document.getElementById('fc-back').classList.add('show');
+  document.getElementById('fc-actions').style.display = 'flex';
+}
+
+async function loadAiAnswer(){
+  if(fcAiLoaded) return;
+  fcAiLoaded = true;
+  const card = fcQueue[fcIndex];
+  const contentEl = document.getElementById('fc-ai-content');
+  contentEl.innerHTML = '<div class="fc-ai-loading">AIが解説を生成中...</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:600,
+        system:'あなたは中小企業診断士1次試験の学習をサポートするアシスタントです。指定されたトピックについて、試験対策として重要なポイントを簡潔に説明してください。回答は日本語で、300字程度にまとめてください。',
+        messages:[{role:'user',content:`科目：${card.subjectName}\nセクション：${card.section}\nトピック：${card.item}\n\nこのトピックについて、試験で問われるポイントを簡潔に解説してください。`}]
+      })
+    });
+    const data = await res.json();
+    if(data.error){ contentEl.innerHTML = `<div class="fc-ai-answer" style="color:var(--danger)">エラー: ${data.error.message}</div>`; return; }
+    const text = data.content?.find(c=>c.type==='text')?.text || '';
+    contentEl.innerHTML = `<div class="fc-ai-answer">${text.replace(/\n/g,'<br>')}</div>`;
+  } catch(e){
+    contentEl.innerHTML = `<div class="fc-ai-answer" style="color:var(--danger)">通信エラーが発生しました。APIキーとネットワークを確認してください。</div>`;
+  }
+}
+
+function fcAnswer(good){
+  const card = fcQueue[fcIndex];
+  if(!state.fc_results[card.key]) state.fc_results[card.key] = {good:0,again:0};
+  if(good) state.fc_results[card.key].good++;
+  else state.fc_results[card.key].again++;
+  // reset review timer if "again"
+  if(!good){ state.dates[card.key] = new Date(Date.now() - 86400000*0.9).toISOString(); }
+  saveState();
+  fcIndex++;
+  renderFcCard();
+}
+function fcSkip(){ fcIndex++; renderFcCard(); }
+
+// ── Schedule view ──
+function renderSchedule(){
+  const el = document.getElementById('schedule-content');
+  const now = new Date();
+  const overdue = [], today = [], upcoming = {};
+  SUBJECTS.forEach(s => {
+    s.sections.forEach((sec,si) => {
+      sec.items.forEach((item,ii) => {
+        const k = getKey(s.id,si,ii);
+        if(!state.checks[k]) return;
+        const st = getDueStatus(k);
+        const next = getNextReviewDate(k);
+        const entry = {item,subjectName:s.name,cls:s.cls,sbg:s.id,next,key:k};
+        if(st==='overdue') overdue.push(entry);
+        else if(st==='today') today.push(entry);
+        else if(next){
+          const days = Math.ceil((next-now)/86400000);
+          if(days<=14){
+            if(!upcoming[days]) upcoming[days]=[];
+            upcoming[days].push(entry);
+          }
+        }
+      });
+    });
+  });
+
+  function renderItems(arr){
+    if(arr.length===0) return '<div class="sched-empty">該当なし</div>';
+    return arr.map(e=>`
+      <div class="sched-item">
+        <span class="si-subject ${e.cls}" style="background:var(--sbg);color:var(--sc)">${e.subjectName}</span>
+        <span class="si-topic">${e.item}</span>
+        ${e.next ? `<span class="si-date">${e.next.toLocaleDateString('ja-JP',{month:'short',day:'numeric'})}</span>` : ''}
+      </div>`).join('');
+  }
+
+  let html = '';
+  if(overdue.length>0) html += `<div class="schedule-section"><h3><span class="sched-dot" style="background:var(--danger)"></span>復習期限切れ（${overdue.length}件）</h3>${renderItems(overdue)}</div>`;
+  if(today.length>0) html += `<div class="schedule-section"><h3><span class="sched-dot" style="background:var(--warn)"></span>本日の復習（${today.length}件）</h3>${renderItems(today)}</div>`;
+  const upcomingDays = Object.keys(upcoming).map(Number).sort((a,b)=>a-b);
+  if(upcomingDays.length>0){
+    html += upcomingDays.map(d => `<div class="schedule-section"><h3><span class="sched-dot" style="background:var(--accent-mid)"></span>${d}日後（${upcoming[d].length}件）</h3>${renderItems(upcoming[d])}</div>`).join('');
+  }
+  if(!html) html = '<div class="sched-empty" style="padding:2rem;text-align:center;color:var(--text3)">復習予定のトピックはありません。チェックリストで学習を進めると、忘却曲線に沿った復習スケジュールが表示されます。</div>';
+  el.innerHTML = html;
+}
+
+// ── API settings ──
+function toggleApi(on){
+  apiEnabled = on;
+  localStorage.setItem('smc_apienabled', on?'1':'0');
+  document.getElementById('api-key-area').classList.toggle('show', on);
+  if(on && apiKey) updateApiStatus(true);
+}
+function saveApiKey(){
+  const val = document.getElementById('api-key-input').value.trim();
+  if(!val){ updateApiStatus(false,'キーを入力してください'); return; }
+  apiKey = val;
+  localStorage.setItem('smc_apikey', apiKey);
+  updateApiStatus(true);
+}
+function updateApiStatus(ok, msg){
+  const el = document.getElementById('api-status');
+  if(ok){ el.textContent = '保存済み'; el.className = 'api-status ok'; }
+  else { el.textContent = msg||''; el.className = 'api-status ng'; }
+}
+
+// ── Reset ──
+function resetAll(){
+  if(!confirm('すべてのチェック・復習データをリセットしますか？この操作は元に戻せません。')) return;
+  state = {checks:{},dates:{},fc_results:{}};
+  saveState();
+  renderSubject(currentSubjectId);
+  renderNav();
+  updateMetrics();
+}
+
+// ── Init ──
+loadState();
+if(apiEnabled){
+  document.getElementById('api-toggle').checked = true;
+  document.getElementById('api-key-area').classList.add('show');
+  if(apiKey){ document.getElementById('api-key-input').value = apiKey; updateApiStatus(true); }
+}
+document.getElementById('checklist-view').style.display = '';
+renderNav();
+renderSubject(currentSubjectId);
+updateMetrics();
+</script>
+</body>
+</html>
